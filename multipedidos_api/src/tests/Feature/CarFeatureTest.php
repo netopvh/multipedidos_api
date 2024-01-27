@@ -1,160 +1,193 @@
 <?php
 
-namespace Tests\Feature;
+use App\Models\Car;
+use function Pest\Faker\fake;
 
-use Database\Seeders\CarSeeder;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
+test('show errors on empty fields', function () {
+    $response = $this->postJson('/api/cars', []);
 
-class CarFeatureTest extends TestCase
-{
-    use WithFaker, DatabaseMigrations;
+    $response->assertStatus(422);
+});
 
-    private $brands = [
-        'Honda',
-        'Hyundai',
-        'Jeep',
-        'Mitsubishi',
-        'Nissan',
-        'Volkswagen',
-        'Volvo',
-        'Audi',
-        'BMW',
-        'Chevrolet',
-        'Citroen',
-        'Dodge',
-        'Ferrari',
-        'Fiat',
-        'Ford'
-    ];
+test('show errors on invalid fields', function () {
 
-    private $models = [
-        'Accord',
-        'Accent',
-        'Cherokee',
-        'Lancer',
-        'Sentra',
-        'Golf',
-        'XC90',
-        'A4',
-        'X5',
-        'Cruze',
-        'C3',
-        'Challenger',
-        '488',
-        '500',
-        'Fiesta'
-    ];
+    $response = $this->postJson('/api/cars', [
+        'name' => fake('pt_BR')->name,
+        'brand' => fake()->randomElement(['Honda', 'Hyundai', 'Jeep']),
+        'model' => fake()->randomElement(['Accord', 'Accent', 'Cherokee']),
+        'year' => fake()->year
+    ]);
 
-    /**
-     * A basic feature test example.
-     */
-    public function test_show_errors_on_empty_fields() : void
-    {
-        $response = $this->postJson('/api/cars', []);
+    $response->assertStatus(422);
+});
 
-        $response->assertStatus(422);
-    }
+test('show errors on invalid year', function () {
 
-    public function test_show_errors_on_invalid_fields() : void
-    {
-        $response = $this->postJson('/api/cars', [
-            'name' => $this->faker->randomElement($this->models),
-            'brand' => $this->faker->randomElement($this->brands),
-            'model' => $this->faker->randomElement($this->models),
-            'year' => $this->faker->year
-        ]);
+    $response = $this->postJson('/api/cars', [
+        'model' => fake()->randomElement(['Accord', 'Accent', 'Cherokee']),
+        'brand' => fake()->randomElement(['Honda', 'Hyundai', 'Jeep']),
+        'color' => fake()->colorName,
+        'year' => 1234
+    ]);
 
-        $response->assertStatus(422);
-    }
+    $response->assertStatus(422);
+});
 
-    public function test_show_errors_on_invalid_year() : void
-    {
-        $response = $this->postJson('/api/cars', [
-            'model' => $this->faker->randomElement($this->models),
-            'brand' => $this->faker->randomElement($this->brands),
-            'color' => $this->faker->colorName,
-            'year' => 1234
-        ]);
+test('create new car', function () {
 
-        $response->assertStatus(422);
-    }
+    $response = $this->postJson('/api/cars', [
+        'model' => fake()->randomElement(['Accord', 'Accent', 'Cherokee']),
+        'brand' => fake()->randomElement(['Honda', 'Hyundai', 'Jeep']),
+        'color' => fake()->colorName,
+        'year' => fake()->year
+    ]);
 
-    public function test_create_new_car() : void
-    {
-        $response = $this->postJson('/api/cars', [
-            'model' => $this->faker->randomElement($this->models),
-            'brand' => $this->faker->randomElement($this->brands),
-            'color' => $this->faker->colorName,
-            'year' => 2022
-        ]);
+    $response->assertStatus(201);
+});
 
-        $response->assertStatus(201);
-    }
 
-    public function test_show_all_cars() : void
-    {
+test('show all cars', function () {
 
-        $this->seed(CarSeeder::class);
+    $response = $this->getJson('/api/cars');
 
-        $response = $this->getJson('/api/cars');
+    $response->assertStatus(200);
+    $response->assertJson([
+        'message' => 'Lista carregada com sucesso'
+    ]);
+});
 
-        $response->assertStatus(200);
-        $response->assertJsonFragment([
-            'message' => 'Lista carregada com sucesso'
-        ]);
-    }
+test('show car by id', function () {
 
-    public function test_car_not_exists_in_db() : void
-    {
-        $response = $this->getJson('/api/cars/1000');
+    $car = Car::factory()->create();
 
-        $response->assertStatus(404);
-        $response->assertJsonFragment([
-            'message' => 'Carro não encontrado'
-        ]);
-    }
+    $response = $this->getJson('/api/cars/' . $car->id);
 
-    public function test_show_car_by_id() : void
-    {
-        $this->seed(CarSeeder::class);
+    $response->assertStatus(200);
+    $response->assertJson([
+        'message' => 'Carro carregado com sucesso',
+        'data' => [
+            'id' => $car->id,
+            'model' => $car->model,
+            'brand' => $car->brand,
+            'color' => $car->color,
+            'year' => $car->year
+        ]
+    ]);
+});
 
-        $response = $this->getJson('/api/cars/1');
+test('car not exists in database', function () {
 
-        $response->assertStatus(200);
-        $response->assertJsonFragment([
-            'message' => 'Carro carregado com sucesso'
-        ]);
-    }
+    $response = $this->getJson('/api/cars/' . fake()->randomDigit);
 
-    public function test_update_car_by_id() : void
-    {
-        $this->seed(CarSeeder::class);
+    $response->assertStatus(404);
+    $response->assertJson([
+        'message' => 'Carro não encontrado'
+    ]);
+});
 
-        $response = $this->putJson('/api/cars/1', [
-            'model' => $this->faker->randomElement($this->models),
-            'brand' => $this->faker->randomElement($this->brands),
-            'color' => $this->faker->colorName,
-            'year' => 2022
-        ]);
+test('update car by id', function () {
 
-        $response->assertStatus(200);
-        $response->assertJsonFragment([
-            'message' => 'Carro atualizado com sucesso'
-        ]);
-    }
+    $car = Car::factory()->create();
 
-    public function test_delete_car_by_id() : void
-    {
-        $this->seed(CarSeeder::class);
+    $model = fake()->randomElement(['Accord', 'Accent', 'Cherokee']);
+    $brand = fake()->randomElement(['Honda', 'Hyundai', 'Jeep']);
+    $color = fake()->colorName;
+    $year = fake()->year;
 
-        $response = $this->deleteJson('/api/cars/1');
+    $response = $this->putJson('/api/cars/' . $car->id, [
+        'model' => $model,
+        'brand' => $brand,
+        'color' => $color,
+        'year' => $year
+    ]);
 
-        $response->assertStatus(200);
-        $response->assertJsonFragment([
-            'message' => 'Carro deletado com sucesso'
-        ]);
-    }
-}
+    $response->assertStatus(200);
+    $response->assertJson([
+        'message' => 'Carro atualizado com sucesso',
+        'data' => [
+            'id' => $car->id,
+            'model' => $model,
+            'brand' => $brand,
+            'color' => $color,
+            'year' => $year
+        ]
+    ]);
+});
+
+test('delete car by id', function () {
+
+    $car = Car::factory()->create();
+
+    $response = $this->deleteJson('/api/cars/' . $car->id);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'message' => 'Carro deletado com sucesso'
+    ]);
+});
+
+// namespace Tests\Feature;
+
+// use Database\Seeders\CarSeeder;
+// use Illuminate\Foundation\Testing\DatabaseMigrations;
+// use Illuminate\Foundation\Testing\RefreshDatabase;
+// use Illuminate\Foundation\Testing\WithFaker;
+// use Tests\TestCase;
+
+// class CarFeatureTest extends TestCase
+// {
+//     use WithFaker, DatabaseMigrations;
+
+//     private $brands = [
+//         'Honda',
+//         'Hyundai',
+//         'Jeep',
+//         'Mitsubishi',
+//         'Nissan',
+//         'Volkswagen',
+//         'Volvo',
+//         'Audi',
+//         'BMW',
+//         'Chevrolet',
+//         'Citroen',
+//         'Dodge',
+//         'Ferrari',
+//         'Fiat',
+//         'Ford'
+//     ];
+
+//     private $models = [
+//         'Accord',
+//         'Accent',
+//         'Cherokee',
+//         'Lancer',
+//         'Sentra',
+//         'Golf',
+//         'XC90',
+//         'A4',
+//         'X5',
+//         'Cruze',
+//         'C3',
+//         'Challenger',
+//         '488',
+//         '500',
+//         'Fiesta'
+//     ];
+
+//     /**
+//      * A basic feature test example.
+//      */
+
+
+//     public function test_delete_car_by_id() : void
+//     {
+//         $this->seed(CarSeeder::class);
+
+//         $response = $this->deleteJson('/api/cars/1');
+
+//         $response->assertStatus(200);
+//         $response->assertJsonFragment([
+//             'message' => 'Carro deletado com sucesso'
+//         ]);
+//     }
+// }

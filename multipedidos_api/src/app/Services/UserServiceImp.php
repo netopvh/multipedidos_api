@@ -37,7 +37,7 @@ class UserServiceImp implements UserServiceInterface
         $user = $this->userRepository->findById($id);
 
         $user->cars()->where('car_id', $data['car_id'])->exists() ?
-            throw new \Exception("Usuário já possui este carro") :
+            throw new \Exception("Carro já associado ao usuário") :
             $user->cars()->attach($data['car_id']);
     }
 
@@ -47,7 +47,7 @@ class UserServiceImp implements UserServiceInterface
 
         $user->cars()->where('car_id', $data['car_id'])->exists() ?
             $user->cars()->detach($data['car_id']) :
-            throw new \Exception("Usuário não possui este carro");
+            throw new \Exception("Carro não associado ao usuário");
     }
 
     public function create(array $data) : Model
