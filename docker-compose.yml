@@ -1,0 +1,65 @@
+version: '3.7'
+
+networks:
+  backend:
+
+
+services:
+  nginx:
+    build:
+      context: nginx/docker
+      dockerfile: Dockerfile
+    volumes:
+      - ./multipedidos_api/src:/var/www
+      - ./nginx/multipedidos_api.conf:/etc/nginx/conf.d/multipedidos_api.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "${NGINX_PORT}:81"
+
+    networks:
+      backend:
+        aliases:
+          - nginx
+    restart: unless-stopped
+
+  mysql:
+    build:
+      context: ./mysql
+      args:
+        - MYSQL_VERSION=${MYSQL_VERSION}
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: ${TZ}
+    networks:
+      backend:
+        aliases:
+          - mysql
+
+  multipedidos_api:
+    build:
+      context: multipedidos_api/docker
+      dockerfile: Dockerfile
+      args:
+        - PUSER=${UNAME}
+        - PUID=${UID}
+        - PGID=${GID}
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./multipedidos_api/src:/var/www
+    networks:
+      backend:
+        aliases:
+          - multipedidos_api

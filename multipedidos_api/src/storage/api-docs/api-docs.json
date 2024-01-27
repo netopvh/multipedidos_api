@@ -1,0 +1,472 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Documentação API Multipedidos",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/cars": {
+            "get": {
+                "tags": [
+                    "Carros"
+                ],
+                "summary": "Lista carros",
+                "description": "Retorna uma lista com todos os carros cadastrados no banco de dados",
+                "operationId": "158b081c3b62cbad1d47a7baf9ed52ac",
+                "responses": {
+                    "200": {
+                        "description": "Lista carregada com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Carros"
+                ],
+                "summary": "Cria um carro",
+                "description": "Cria um novo carro de acordo com os atributos passados pelo corpo da requisição",
+                "operationId": "581b89650bc67a7ae22937830482fcb7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "brand",
+                                    "year",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "model": {
+                                        "type": "string",
+                                        "example": "Gol"
+                                    },
+                                    "brand": {
+                                        "type": "string",
+                                        "example": "Volkswagen"
+                                    },
+                                    "year": {
+                                        "type": "integer",
+                                        "example": 2021
+                                    },
+                                    "color": {
+                                        "type": "string",
+                                        "example": "Branco"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Carro criado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        },
+        "/api/cars/{id}": {
+            "get": {
+                "tags": [
+                    "Carros"
+                ],
+                "summary": "Exibe um carro",
+                "description": "Exibe as informações do carro passado por parâmetro",
+                "operationId": "d7bb47a818dc5b242dc4999f159d1037",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do carro",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Carro carregado com sucesso"
+                    },
+                    "404": {
+                        "description": "Carro não encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Carros"
+                ],
+                "summary": "Atualiza um carro",
+                "description": "Atualiza as informações do carro passado por parâmetro",
+                "operationId": "1feba9c073fea407739f3c5f99980c70",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do carro",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "brand",
+                                    "year",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "model": {
+                                        "type": "string",
+                                        "example": "Gol"
+                                    },
+                                    "brand": {
+                                        "type": "string",
+                                        "example": "Volkswagen"
+                                    },
+                                    "year": {
+                                        "type": "integer",
+                                        "example": 2021
+                                    },
+                                    "color": {
+                                        "type": "string",
+                                        "example": "Branco"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Carro atualizado com sucesso"
+                    },
+                    "422": {
+                        "description": "O valor informado não consta em nosso banco de dados"
+                    },
+                    "400": {
+                        "description": "Carro não encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Carros"
+                ],
+                "summary": "Remove um carro",
+                "description": "Remove o carro passado por parâmetro",
+                "operationId": "8e2cc084cc4b07e94c769d0f92e214fd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do carro",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Carro removido com sucesso"
+                    },
+                    "404": {
+                        "description": "Carro não encontrado"
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Lista usuários",
+                "description": "Retorna uma lista com todos os usuários cadastrados no banco de dados",
+                "operationId": "d7a57f4d7de18fb0f92501172472c9b6",
+                "responses": {
+                    "200": {
+                        "description": "Lista carregada com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Cria um novo usuário",
+                "description": "Cria um novo usuário de acordo com os atributos passados pelo corpo da requisição",
+                "operationId": "9fea6f2adcb69614c521a7733358382d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "johndoe@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        },
+        "/api/users/update/{id}": {
+            "put": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Atualizar e-mail e senha",
+                "description": "Atualiza o e-mail e a senha do usuário passado por parâmetro",
+                "operationId": "7b89c8c6e447310f11bc8c4304263025",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "janedoe@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Senha atualizada com sucesso"
+                    },
+                    "422": {
+                        "description": "O valor informado para o campo id não existe na base de dados"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Exibe um usuário",
+                "description": "Exibe as informações do usuário passado por parâmetro",
+                "operationId": "40a5104e23b52137e78c3d3ac48b88a8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário carregado com sucesso"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Remove um usuário",
+                "description": "Remove o usuário passado por parâmetro",
+                "operationId": "ce06860a51ab016ef66e753544fe4563",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário removido com sucesso"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    }
+                }
+            }
+        },
+        "/api/users/attach-car/{id}": {
+            "post": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Atribui veículo ao usuário",
+                "description": "Faz a atribuição de um veículo ao usuário passado por parâmetro",
+                "operationId": "7cdf69804751400524ccb82a998fac21",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "car_id"
+                                ],
+                                "properties": {
+                                    "car_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Carro criado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        },
+        "/api/users/detach-car/{id}": {
+            "post": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Remove veículo do usuário",
+                "description": "Remove um veículo que foi atribuído ao usuário passado por parâmetro",
+                "operationId": "5bd62f034f09c1e4278148c95d833661",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "car_id"
+                                ],
+                                "properties": {
+                                    "car_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Carro criado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        }
+    }
+}
