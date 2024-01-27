@@ -60,7 +60,7 @@ class CarFactory extends Factory
             'model' => $this->faker->randomElement($this->models),
             'brand' => $this->faker->randomElement($this->brands),
             'color' => $this->faker->colorName,
-            'year' => $this->faker->year,
+            'year' => (int) $this->faker->year,
         ];
     }
 }

@@ -4,18 +4,21 @@ use function Pest\Faker\fake;
 use App\Models\{Car, User};
 
 test('list all users', function () {
+
+    $users = User::factory()->count(3)->create();
+
     $response = $this->getJson('/api/users');
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Lista carregada com sucesso'
-    ]);
+    expect(200)->toBe($response->status());
+    expect($response->json('data'))->toHaveCount(3);
+
 });
 
 test('show errors on submit empty attributes', function () {
+
     $response = $this->postJson('/api/users', []);
 
-    $response->assertStatus(422);
+    expect($response->status())->toBe(422);
 });
 
 test('show errors on submit withou password confirmation', function () {
@@ -25,18 +28,25 @@ test('show errors on submit withou password confirmation', function () {
         'password' => fake()->password,
     ]);
 
-    $response->assertStatus(422);
+    expect($response->status())->toBe(422);
+    expect($response->json('message'))->toBe('O campo senha não confere com a confirmação');
+
 });
 
-test('show errors on submit invalid field params', function () {
+test('show errors on submit invalid email format', function () {
+
+    $password = fake()->password;
+
     $response = $this->postJson('/api/users', [
         'name' => fake('pt_BR')->name,
         'email' => fake()->firstName,
-        'password' => fake()->password,
-        'password_confirmation' => fake()->password
+        'password' => $password,
+        'password_confirmation' => $password
     ]);
 
-    $response->assertStatus(422);
+    expect($response->status())->toBe(422);
+    expect($response->json('message'))->toBe('O campo email deve ser um email válido');
+
 });
 
 test('create new user', function () {
@@ -50,17 +60,18 @@ test('create new user', function () {
         'password_confirmation' => $password
     ]);
 
-    $response->assertStatus(201);
-    $response->assertJson([
-        'message' => 'Usuário criado com sucesso'
-    ]);
+    expect($response->status())->toBe(201);
+    expect($response->json('message'))->toBe('Usuário criado com sucesso');
+
 });
 
 test('show errors on invalid id param', function () {
 
     $response = $this->getJson('/api/users/' . fake()->randomDigit);
 
-    $response->assertStatus(404);
+    expect($response->status())->toBe(404);
+    expect($response->json('message'))->toBe('Usuário não encontrado');
+
 });
 
 test('show user by id', function () {
@@ -69,15 +80,12 @@ test('show user by id', function () {
 
     $response = $this->getJson('/api/users/' . $user->id);
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Usuário carregado com sucesso',
-        'data' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email
-        ]
-    ]);
+    expect($response->status())->toBe(200);
+    expect($response->json('message'))->toBe('Usuário carregado com sucesso');
+    expect($response->json('data'))
+        ->toContain($user->name)
+        ->toContain($user->email);
+
 });
 
 test('update user email and password', function () {
@@ -92,10 +100,9 @@ test('update user email and password', function () {
         'password_confirmation' => $password
     ]);
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Senha atualizada com sucesso'
-    ]);
+    expect($response->status())->toBe(200);
+    expect($response->json('message'))->toBe('Senha atualizada com sucesso');
+
 });
 
 test('attach car to user', function () {
@@ -107,10 +114,9 @@ test('attach car to user', function () {
         'car_id' => $car->id
     ]);
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Carro associado com sucesso'
-    ]);
+    expect($response->status())->toBe(200);
+    expect($response->json('message'))->toBe('Carro associado com sucesso');
+
 });
 
 test('detach car from user', function () {
@@ -124,10 +130,9 @@ test('detach car from user', function () {
         'car_id' => $car->id
     ]);
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Carro desassociado com sucesso'
-    ]);
+    expect($response->status())->toBe(200);
+    expect($response->json('message'))->toBe('Carro desassociado com sucesso');
+
 });
 
 test('show errors on attach car to user', function () {
@@ -140,10 +145,9 @@ test('show errors on attach car to user', function () {
         'car_id' => $car->id
     ]);
 
-    $response->assertStatus(400);
-    $response->assertJson([
-        'message' => 'Carro já associado ao usuário'
-    ]);
+    expect($response->status())->toBe(400);
+    expect($response->json('message'))->toBe('Carro já associado ao usuário');
+
 });
 
 test('show error on detach car from user', function () {
@@ -155,8 +159,7 @@ test('show error on detach car from user', function () {
         'car_id' => $car->id
     ]);
 
-    $response->assertStatus(400);
-    $response->assertJson([
-        'message' => 'Carro não associado ao usuário'
-    ]);
+    expect($response->status())->toBe(400);
+    expect($response->json('message'))->toBe('Carro não associado ao usuário');
+
 });

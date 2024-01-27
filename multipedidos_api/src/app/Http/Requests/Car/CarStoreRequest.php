@@ -39,6 +39,9 @@ class CarStoreRequest extends FormRequest
             'brand.required' => 'A Marca é obrigatória!',
             'year.required' => 'O Ano é obrigatório!',
             'year.integer' => 'O Ano deve ser um número inteiro!',
+            'year.digits' => 'O Ano deve ter 4 dígitos!',
+            'year.min' => 'O Ano deve ser maior ou igual a 1900!',
+            'year.max' => 'O Ano deve ser menor ou igual a ' . (date('Y') + 1) . '!',
             'color.required' => 'A Cor é obrigatória!',
         ];
     }

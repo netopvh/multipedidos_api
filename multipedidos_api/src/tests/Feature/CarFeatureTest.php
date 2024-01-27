@@ -6,10 +6,16 @@ use function Pest\Faker\fake;
 test('show errors on empty fields', function () {
     $response = $this->postJson('/api/cars', []);
 
-    $response->assertStatus(422);
+    expect($response->status())->toBe(422);
+    expect($response->json('errors'))->toHaveCount(4);
+    expect($response->json('errors.model'))->toContain('O Modelo é obrigatório!');
+    expect($response->json('errors.brand'))->toContain('A Marca é obrigatória!');
+    expect($response->json('errors.color'))->toContain('A Cor é obrigatória!');
+    expect($response->json('errors.year'))->toContain('O Ano é obrigatório!');
+
 });
 
-test('show errors on invalid fields', function () {
+test('show errors on submit invalid fields', function () {
 
     $response = $this->postJson('/api/cars', [
         'name' => fake('pt_BR')->name,
@@ -18,10 +24,11 @@ test('show errors on invalid fields', function () {
         'year' => fake()->year
     ]);
 
-    $response->assertStatus(422);
+    expect($response->status())->toBe(422);
+
 });
 
-test('show errors on invalid year', function () {
+test('show errors on submit invalid year', function () {
 
     $response = $this->postJson('/api/cars', [
         'model' => fake()->randomElement(['Accord', 'Accent', 'Cherokee']),
@@ -30,30 +37,45 @@ test('show errors on invalid year', function () {
         'year' => 1234
     ]);
 
-    $response->assertStatus(422);
+    expect($response->status())->toBe(422);
+    expect($response->json('errors.year'))->toContain('O Ano deve ser maior ou igual a 1900!');
+
 });
 
 test('create new car', function () {
 
+    $model = fake()->randomElement(['Accord', 'Accent', 'Cherokee']);
+    $brand = fake()->randomElement(['Honda', 'Hyundai', 'Jeep']);
+    $color = fake()->colorName;
+    $year = fake()->year;
+
     $response = $this->postJson('/api/cars', [
-        'model' => fake()->randomElement(['Accord', 'Accent', 'Cherokee']),
-        'brand' => fake()->randomElement(['Honda', 'Hyundai', 'Jeep']),
-        'color' => fake()->colorName,
-        'year' => fake()->year
+        'model' => $model,
+        'brand' => $brand,
+        'color' => $color,
+        'year' => $year
     ]);
 
-    $response->assertStatus(201);
+    expect($response->status())->toBe(201);
+    expect($response->json('message'))->toBe('Carro criado com sucesso');
+    expect($response->json('data.model'))->toBe($model);
+    expect($response->json('data.brand'))->toBe($brand);
+    expect($response->json('data.color'))->toBe($color);
+    expect($response->json('data.year'))->toBe($year);
+
 });
 
 
 test('show all cars', function () {
 
+    $cars = Car::factory()->count(10)->create();
+
     $response = $this->getJson('/api/cars');
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Lista carregada com sucesso'
-    ]);
+    expect($response->status())->toBe(200);
+    expect($response->json('message'))->toBe('Lista carregada com sucesso');
+    expect($response->json('data'))->toHaveCount(10);
+
 });
 
 test('show car by id', function () {
@@ -62,27 +84,22 @@ test('show car by id', function () {
 
     $response = $this->getJson('/api/cars/' . $car->id);
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Carro carregado com sucesso',
-        'data' => [
-            'id' => $car->id,
-            'model' => $car->model,
-            'brand' => $car->brand,
-            'color' => $car->color,
-            'year' => $car->year
-        ]
-    ]);
+    expect($response->status())->toBe(200);
+    expect($response->json('message'))->toBe('Carro carregado com sucesso');
+    expect($response->json('data.model'))->toBe($car->model);
+    expect($response->json('data.brand'))->toBe($car->brand);
+    expect($response->json('data.color'))->toBe($car->color);
+    expect($response->json('data.year'))->toBe($car->year);
+
 });
 
 test('car not exists in database', function () {
 
     $response = $this->getJson('/api/cars/' . fake()->randomDigit);
 
-    $response->assertStatus(404);
-    $response->assertJson([
-        'message' => 'Carro não encontrado'
-    ]);
+    expect($response->status())->toBe(404);
+    expect($response->json('message'))->toBe('Carro não encontrado');
+
 });
 
 test('update car by id', function () {
@@ -92,7 +109,7 @@ test('update car by id', function () {
     $model = fake()->randomElement(['Accord', 'Accent', 'Cherokee']);
     $brand = fake()->randomElement(['Honda', 'Hyundai', 'Jeep']);
     $color = fake()->colorName;
-    $year = fake()->year;
+    $year = (int) fake()->year;
 
     $response = $this->putJson('/api/cars/' . $car->id, [
         'model' => $model,
@@ -101,17 +118,13 @@ test('update car by id', function () {
         'year' => $year
     ]);
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Carro atualizado com sucesso',
-        'data' => [
-            'id' => $car->id,
-            'model' => $model,
-            'brand' => $brand,
-            'color' => $color,
-            'year' => $year
-        ]
-    ]);
+    expect($response->status())->toBe(200);
+    expect($response->json('message'))->toBe('Carro atualizado com sucesso');
+    expect($response->json('data.model'))->toBe($model);
+    expect($response->json('data.brand'))->toBe($brand);
+    expect($response->json('data.color'))->toBe($color);
+    expect($response->json('data.year'))->toBe($year);
+
 });
 
 test('delete car by id', function () {
@@ -120,74 +133,7 @@ test('delete car by id', function () {
 
     $response = $this->deleteJson('/api/cars/' . $car->id);
 
-    $response->assertStatus(200);
-    $response->assertJson([
-        'message' => 'Carro deletado com sucesso'
-    ]);
+    expect($response->status())->toBe(200);
+    expect($response->json('message'))->toBe('Carro deletado com sucesso');
+
 });
-
-// namespace Tests\Feature;
-
-// use Database\Seeders\CarSeeder;
-// use Illuminate\Foundation\Testing\DatabaseMigrations;
-// use Illuminate\Foundation\Testing\RefreshDatabase;
-// use Illuminate\Foundation\Testing\WithFaker;
-// use Tests\TestCase;
-
-// class CarFeatureTest extends TestCase
-// {
-//     use WithFaker, DatabaseMigrations;
-
-//     private $brands = [
-//         'Honda',
-//         'Hyundai',
-//         'Jeep',
-//         'Mitsubishi',
-//         'Nissan',
-//         'Volkswagen',
-//         'Volvo',
-//         'Audi',
-//         'BMW',
-//         'Chevrolet',
-//         'Citroen',
-//         'Dodge',
-//         'Ferrari',
-//         'Fiat',
-//         'Ford'
-//     ];
-
-//     private $models = [
-//         'Accord',
-//         'Accent',
-//         'Cherokee',
-//         'Lancer',
-//         'Sentra',
-//         'Golf',
-//         'XC90',
-//         'A4',
-//         'X5',
-//         'Cruze',
-//         'C3',
-//         'Challenger',
-//         '488',
-//         '500',
-//         'Fiesta'
-//     ];
-
-//     /**
-//      * A basic feature test example.
-//      */
-
-
-//     public function test_delete_car_by_id() : void
-//     {
-//         $this->seed(CarSeeder::class);
-
-//         $response = $this->deleteJson('/api/cars/1');
-
-//         $response->assertStatus(200);
-//         $response->assertJsonFragment([
-//             'message' => 'Carro deletado com sucesso'
-//         ]);
-//     }
-// }
