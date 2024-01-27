@@ -22,11 +22,11 @@ test('show errors on submit empty attributes', function () {
 });
 
 test('show errors on submit withou password confirmation', function () {
-    $response = $this->postJson('/api/users', [
-        'name' => fake('pt_BR')->name,
-        'email' => fake()->email,
-        'password' => fake()->password,
-    ]);
+
+    $data = User::factory()->raw();
+    unset($data['password_confirmation']);
+
+    $response = $this->postJson('/api/users', $data);
 
     expect($response->status())->toBe(422);
     expect($response->json('message'))->toBe('O campo senha não confere com a confirmação');
@@ -35,14 +35,11 @@ test('show errors on submit withou password confirmation', function () {
 
 test('show errors on submit invalid email format', function () {
 
-    $password = fake()->password;
+    $data = User::factory()->raw();
+    $data['email'] = fake()->firstName;
+    $data['password_confirmation'] = $data['password'];
 
-    $response = $this->postJson('/api/users', [
-        'name' => fake('pt_BR')->name,
-        'email' => fake()->firstName,
-        'password' => $password,
-        'password_confirmation' => $password
-    ]);
+    $response = $this->postJson('/api/users', $data);
 
     expect($response->status())->toBe(422);
     expect($response->json('message'))->toBe('O campo email deve ser um email válido');
@@ -51,17 +48,15 @@ test('show errors on submit invalid email format', function () {
 
 test('create new user', function () {
 
-    $password = fake()->password;
+    $data = User::factory()->raw();
+    $data['password_confirmation'] = $data['password'];
 
-    $response = $this->postJson('/api/users', [
-        'name' => fake('pt_BR')->name,
-        'email' => fake()->email,
-        'password' => $password,
-        'password_confirmation' => $password
-    ]);
+    $response = $this->postJson('/api/users', $data);
 
     expect($response->status())->toBe(201);
     expect($response->json('message'))->toBe('Usuário criado com sucesso');
+    expect($response->json('data.name'))->toBe($data['name']);
+    expect($response->json('data.email'))->toBe($data['email']);
 
 });
 
@@ -82,9 +77,8 @@ test('show user by id', function () {
 
     expect($response->status())->toBe(200);
     expect($response->json('message'))->toBe('Usuário carregado com sucesso');
-    expect($response->json('data'))
-        ->toContain($user->name)
-        ->toContain($user->email);
+    expect($response->json('data.name'))->toBe($user->name);
+    expect($response->json('data.email'))->toBe($user->email);
 
 });
 

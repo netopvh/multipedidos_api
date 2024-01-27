@@ -17,25 +17,25 @@ test('show errors on empty fields', function () {
 
 test('show errors on submit invalid fields', function () {
 
-    $response = $this->postJson('/api/cars', [
-        'name' => fake('pt_BR')->name,
-        'brand' => fake()->randomElement(['Honda', 'Hyundai', 'Jeep']),
-        'model' => fake()->randomElement(['Accord', 'Accent', 'Cherokee']),
-        'year' => fake()->year
-    ]);
+    //Prepara os dados para o teste
+    $data = Car::factory()->raw();
+    unset($data['model']);
+    $data['name'] = fake()->name;
 
+    // Realiza a requisição
+    $response = $this->postJson('/api/cars', $data);
+
+    // Verifica os resultados do teste
     expect($response->status())->toBe(422);
 
 });
 
 test('show errors on submit invalid year', function () {
 
-    $response = $this->postJson('/api/cars', [
-        'model' => fake()->randomElement(['Accord', 'Accent', 'Cherokee']),
-        'brand' => fake()->randomElement(['Honda', 'Hyundai', 'Jeep']),
-        'color' => fake()->colorName,
-        'year' => 1234
-    ]);
+    $data = Car::factory()->raw();
+    $data['year'] = 1234;
+
+    $response = $this->postJson('/api/cars', $data);
 
     expect($response->status())->toBe(422);
     expect($response->json('errors.year'))->toContain('O Ano deve ser maior ou igual a 1900!');
@@ -44,24 +44,16 @@ test('show errors on submit invalid year', function () {
 
 test('create new car', function () {
 
-    $model = fake()->randomElement(['Accord', 'Accent', 'Cherokee']);
-    $brand = fake()->randomElement(['Honda', 'Hyundai', 'Jeep']);
-    $color = fake()->colorName;
-    $year = fake()->year;
+    $data = Car::factory()->raw();
 
-    $response = $this->postJson('/api/cars', [
-        'model' => $model,
-        'brand' => $brand,
-        'color' => $color,
-        'year' => $year
-    ]);
+    $response = $this->postJson('/api/cars', $data);
 
     expect($response->status())->toBe(201);
     expect($response->json('message'))->toBe('Carro criado com sucesso');
-    expect($response->json('data.model'))->toBe($model);
-    expect($response->json('data.brand'))->toBe($brand);
-    expect($response->json('data.color'))->toBe($color);
-    expect($response->json('data.year'))->toBe($year);
+    expect($response->json('data.model'))->toBe($data['model']);
+    expect($response->json('data.brand'))->toBe($data['brand']);
+    expect($response->json('data.color'))->toBe($data['color']);
+    expect($response->json('data.year'))->toBe($data['year']);
 
 });
 
